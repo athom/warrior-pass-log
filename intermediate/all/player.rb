@@ -23,7 +23,6 @@ class Player
 	
 	def initialize
 		@dirs = [:forward, :backward, :left, :right]
-		@step = 0
 		@binded_dogs = []
 	end
 	
@@ -75,20 +74,21 @@ class Player
 	
 	def play_turn(warrior)
 		pigs = warrior.listen
-		pigs.sort!
+		pigs.sort!#bcz 'C'(Captive) is less than 'S'(Sludge) ant 'T'(Thick Sludge), and <=> is redefined in Space class
 		
-		if pigs.empty? #bingo, clear
+		if pigs.empty? #bingo! clear
 				warrior.walk!(warrior.direction_of_stairs)
-		else #go to next dog
+		else 
+			#recovery case, need to be improved
 			if warrior.health < 13 && !attacked?(warrior)  && (!pigs.first.ticking? || pigs.first.ticking? && pigs.size > 5)
 				warrior.rest!
 			elsif warrior.health < 16 && pigs.to_s.match(/^Thick Sludge$/) && !attacked?(warrior)
 				warrior.rest!
 			else
 				dir = warrior.direction_of(pigs.first)
-				if warrior.feel(dir).stairs?
+				if warrior.feel(dir).stairs?#avoid the stairs
 					search_enemies(warrior,dir)
-				elsif warrior.feel(dir).captive?
+				elsif warrior.feel(dir).captive?#release the captives
 					if surrounded?(warrior, dir)
 						fight(warrior,dir)
 					else
@@ -96,14 +96,13 @@ class Player
 						@binded_dogs.delete(warrior.feel(dir))
 					end
 				elsif warrior.feel(dir).empty?
-					warrior.walk!(dir)
+					warrior.walk!(dir)#go to the next pig
 				else 
 					fight(warrior,dir)
 				end
 			end
 		end
 		
-		@step += 1
   end
 	
 end
